@@ -6,17 +6,28 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unchecked")
 public class AnotherMap<K, V> implements Map<K, V> {
-	private int size;
+	private int size = 0;
 	private Entry<K, V>[] array;
 
 	public AnotherMap() {
-		size = 0;
 		array = new Entry[16];
 	}
 
 	public AnotherMap(int capacity) {
-		size = 0;
 		array = new Entry[capacity];
+	}
+
+	public void ensureCapacity(int capacity) {
+		Entry<K, V>[] temp = getNonEmptyEntries().toArray(Entry[]::new);
+		array = new Entry[capacity];
+		size = 0;
+		for (Entry<K, V> e : temp) {
+			put(e.key, e.value);
+		}
+	}
+
+	private void ensureCapacity() {
+		ensureCapacity((int) (array.length * 1.5 + 1));
 	}
 
 	@Override
@@ -31,7 +42,11 @@ public class AnotherMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsKey(Object key) {
-		return keySet().stream().anyMatch(k -> k.equals(key));
+		for (int i = getHash1(key); i < array.length; i += getHash2(key)) {
+			if (array[i] == null) continue;
+			if (array[i].key.equals(key)) return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -43,9 +58,10 @@ public class AnotherMap<K, V> implements Map<K, V> {
 	public V get(Object key) {
 		Entry<K, V> e = null;
 
-		for (int i = Math.abs(key.hashCode()) % array.length; i < array.length; i++) {
+		for (int i = getHash1(key); i < array.length; i += getHash2(key)) {
 			e = array[i];
-			if (e == null || e.key.equals(key)) break;
+			if (e == null) continue;
+			if (e.key.equals(key)) break;
 		}
 
 		return e != null ? e.value : null;
@@ -53,45 +69,32 @@ public class AnotherMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V put(K key, V value) {
-		if (key == null) throw new NullPointerException("key cannot be null");
-		for (int i = Math.abs(key.hashCode()) % array.length; i < array.length; i++) {
-			if (i == array.length - 1) {
-				Entry<K, V>[] temp = getPresent().toArray(Entry[]::new);
-				array = new Entry[array.length + 10];
-				size = 0;
-				for (Entry<K, V> e : temp) {
-					put(e.key, e.value);
-				}
-			}
+		int i = getHash1(key);
 
-			Entry<K, V> currentE = array[i];
-			if (currentE == null) {
+		while (array[i] != null) {
+			if (array[i].key.equals(key)) {
 				array[i] = new Entry<>(key, value);
-				size++;
-				break;
-			} else if (currentE.key.equals(key)) {
-				array[i] = new Entry<>(key, value);
-				break;
+				return value;
 			}
+			if (array.length <= (i += getHash2(key))) ensureCapacity();
 		}
-
+		array[i] = new Entry<>(key, value);
+		size++;
 		return value;
 	}
 
 	@Override
 	public V remove(Object key) {
-		Entry<K, V> e = null;
-		for (int i = Math.abs(key.hashCode()) % array.length; i < array.length; i++) {
-			Entry<K, V> currentE = array[i];
-			if (currentE == null) break;
-			else if (currentE.key.equals(key)) {
-				e = currentE;
+		for (int i = getHash1(key); i < array.length; i += getHash2(key)) {
+			Entry<K, V> e = array[i];
+			if (e == null) return null;
+			else if (e.key.equals(key)) {
 				array[i] = null;
 				size--;
-				break;
+				return e.value;
 			}
 		}
-		return Optional.ofNullable(e).isPresent() ? e.value : null;
+		return null;
 	}
 
 	@Override
@@ -107,21 +110,30 @@ public class AnotherMap<K, V> implements Map<K, V> {
 
 	@Override
 	public Set<K> keySet() {
-		return getPresent().map(Entry::getKey).collect(Collectors.toSet());
+		return getNonEmptyEntries().map(Entry::getKey).collect(Collectors.toSet());
 	}
 
 	@Override
 	public Collection<V> values() {
-		return getPresent().map(Entry::getValue).toList();
+		return getNonEmptyEntries().map(Entry::getValue).toList();
 	}
 
 	@Override
 	public Set<Map.Entry<K, V>> entrySet() {
-		return getPresent().collect(Collectors.toSet());
+		return getNonEmptyEntries().collect(Collectors.toSet());
 	}
 
-	private Stream<Entry<K, V>> getPresent() {
+	private Stream<Entry<K, V>> getNonEmptyEntries() {
 		return Arrays.stream(array).filter(Objects::nonNull);
+	}
+
+	private int getHash1(Object key) {
+		if (key == null) throw new NullPointerException("key cannot be null");
+		return Math.abs(key.hashCode() % array.length);
+	}
+
+	private int getHash2(Object key) {
+		return Math.abs((key.hashCode()) / getHash1(key)) % array.length + 1;
 	}
 
 	private static class Entry<K, V> implements Map.Entry<K, V> {
@@ -157,6 +169,6 @@ public class AnotherMap<K, V> implements Map<K, V> {
 
 	@Override
 	public String toString() {
-		return "size= " + size + getPresent().toList();
+		return "size=" + size + getNonEmptyEntries().toList();
 	}
 }

@@ -47,7 +47,9 @@ public class AnotherMapTest {
 	public void containsKeyTest() {
 		assertTrue(map.containsKey(0));
 		assertFalse(map.containsKey(1));
-		assertFalse(map.containsKey(null));
+		assertThrows(NullPointerException.class,
+				() -> map.containsKey(null),
+				"Null pointer exception expected");
 	}
 
 	@Test
