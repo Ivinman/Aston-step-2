@@ -56,15 +56,12 @@ public class AnotherMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V get(Object key) {
-		Entry<K, V> e = null;
-
 		for (int i = getHash1(key); i < array.length; i += getHash2(key)) {
-			e = array[i];
+			Entry<K, V> e = array[i];
 			if (e == null) continue;
-			if (e.key.equals(key)) break;
+			if (e.key.equals(key)) return e.value;
 		}
-
-		return e != null ? e.value : null;
+		return null;
 	}
 
 	@Override
@@ -133,7 +130,7 @@ public class AnotherMap<K, V> implements Map<K, V> {
 	}
 
 	private int getHash2(Object key) {
-		return Math.abs((key.hashCode()) / getHash1(key)) % array.length + 1;
+		return Math.abs((key.hashCode()) / (getHash1(key) + 1)) % array.length + 1;
 	}
 
 	private static class Entry<K, V> implements Map.Entry<K, V> {

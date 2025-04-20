@@ -1,3 +1,5 @@
+package Module1_test;
+
 import Module1.AnotherMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
