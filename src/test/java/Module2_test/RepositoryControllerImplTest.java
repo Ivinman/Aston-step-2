@@ -5,8 +5,9 @@ import Module2.repository.JPAException;
 import Module2.repository.RepositoryControllerImpl;
 import Module2.repository.User;
 import jakarta.persistence.*;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
@@ -17,12 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RepositoryControllerImplTest {
 
 	private JPA jpaMock;
 	private RepositoryControllerImpl controller;
 
-	@BeforeEach
+	@BeforeAll
 	void setUp() {
 		jpaMock = Mockito.mock(JPA.class);
 		controller = new RepositoryControllerImpl();
