@@ -1,4 +1,4 @@
-package Module2;
+package Module2.utils;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -18,7 +18,7 @@ public class ValidatorUtils {
 			String errorMessages = violations.stream()
 					.map(ConstraintViolation::getMessage)
 					.collect(Collectors.joining("; "));
-			throw new IllegalArgumentException("Ошибка валидации: " + errorMessages);
+			throw new IllegalArgumentException("Validation error: " + errorMessages);
 		}
 	}
 }

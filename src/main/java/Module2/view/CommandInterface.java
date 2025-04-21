@@ -1,4 +1,6 @@
-package Module2;
+package Module2.view;
+
+import Module2.repository.User;
 
 public interface CommandInterface {
 	void newUser();

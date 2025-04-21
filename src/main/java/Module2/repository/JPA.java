@@ -1,4 +1,4 @@
-package Module2;
+package Module2.repository;
 
 import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package Module2;
+package Module2.repository;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -21,15 +21,17 @@ import java.time.Period;
 @NoArgsConstructor
 public class User {
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
-	@NotBlank(message = "Имя не может быть пустым")
+	@NotBlank(message = "Name cannot be empty")
 	private String name;
-	@NotNull(message = "Дата рождения обязательна")
+	@NotNull(message = "BirthDate cannot be null")
 	private LocalDate birthDate;
-	@Email(message = "Неверный формат email")
+	@Email(message = "Wrong format email")
+	@Column(unique = true)
 	private String email;
 	@Setter(AccessLevel.NONE)
-	@Min(value = 0, message = "Возраст не может быть отрицательным")
+	@Min(value = 0, message = "Age should be positive")
 	private int age;
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime createdAt = LocalDateTime.now();

@@ -1,4 +1,4 @@
-package Module2;
+package Module2.repository;
 
 public class JPAException extends RuntimeException {
 	public JPAException(String message, Throwable cause) {

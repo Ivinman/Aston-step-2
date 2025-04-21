@@ -1,9 +1,13 @@
 package Module2_test;
 
-import Module2.*;
+import Module2.repository.JPA;
+import Module2.repository.JPAException;
+import Module2.repository.RepositoryControllerImpl;
+import Module2.repository.User;
 import jakarta.persistence.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -20,7 +24,7 @@ public class RepositoryControllerImplTest {
 
 	@BeforeEach
 	void setUp() {
-		jpaMock = mock(JPA.class);
+		jpaMock = Mockito.mock(JPA.class);
 		controller = new RepositoryControllerImpl();
 		controller.setJpa(jpaMock);
 	}
@@ -43,6 +47,27 @@ public class RepositoryControllerImplTest {
 		long id = controller.newUser(user);
 		assertEquals(1010, id);
 	}
+
+	@Test
+	void newUser_shouldThrowExceptionOnDuplicateEmail() {
+		User user = new User();
+		user.setName("Alice");
+		user.setBirthDate(LocalDate.of(1990, 1, 1));
+		user.setEmail("alice@example.com");
+		user.setId(1L);
+
+		when(jpaMock.run(any(Function.class)))
+				.thenReturn(user.getId())
+				.thenThrow(JPAException.class);
+
+		long id = controller.newUser(user);
+		assertEquals(1L, id);
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.newUser(user));
+
+		assertTrue(exception.getMessage().contains("Cant create new user"));
+	}
+
 
 	@Test
 	void deleteUser_Test_ok() {
@@ -86,6 +111,7 @@ public class RepositoryControllerImplTest {
 
 		List<User> actual = controller.findUser();
 		assertTrue(actual.containsAll(expected));
+		assertEquals(2, actual.size());
 	}
 
 	@Test

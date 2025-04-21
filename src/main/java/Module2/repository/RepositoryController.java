@@ -1,4 +1,4 @@
-package Module2;
+package Module2.repository;
 
 import java.util.List;
 import java.util.Optional;
