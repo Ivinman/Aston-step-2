@@ -1,10 +1,7 @@
 package Module2.repository;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +21,10 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	@NotBlank(message = "Name cannot be empty")
+	@Size(min = 2, max = 255, message = "Name must be 2–255 characters long")
 	private String name;
 	@NotNull(message = "BirthDate cannot be null")
+	@PastOrPresent(message = "Дата не может быть в будущем")
 	private LocalDate birthDate;
 	@Email(message = "Wrong format email")
 	@Column(unique = true)

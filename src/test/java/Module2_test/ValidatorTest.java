@@ -4,8 +4,11 @@ import Module2.repository.User;
 import Module2.utils.ValidatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,6 +25,11 @@ public class ValidatorTest {
 	}
 
 	@Test
+	void validator_test_ok() {
+		assertDoesNotThrow(() -> ValidatorUtils.validate(user));
+	}
+
+	@Test
 	void validator_test_empty() {
 		User user = new User();
 
@@ -34,17 +42,20 @@ public class ValidatorTest {
 		assertTrue(actual.contains(expected));
 	}
 
-	@Test
-	void validator_test_emptyName() {
-		user.setName("");
+	@ParameterizedTest
+	@MethodSource("invalidNames")
+	void validator_test_invalidNames(String invalidName) {
+		user.setName(invalidName);
 
 		IllegalArgumentException exception =
 				assertThrows(IllegalArgumentException.class, () -> ValidatorUtils.validate(user));
 
-		String expected = "Validation error: ";
-		String actual = exception.getMessage();
+		assertTrue(exception.getMessage().contains("Validation error"));
+	}
 
-		assertTrue(actual.contains(expected));
+	private static Stream<String> invalidNames() {
+		return Stream.of("", "A", "a".repeat(256)
+		);
 	}
 
 	@Test
@@ -71,10 +82,5 @@ public class ValidatorTest {
 		String actual = exception.getMessage();
 
 		assertTrue(actual.contains(expected));
-	}
-
-	@Test
-	void validator_test_ok() {
-		assertDoesNotThrow(() -> ValidatorUtils.validate(user));
 	}
 }
