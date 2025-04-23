@@ -17,11 +17,7 @@ public class ValidatorTest {
 
 	@BeforeEach
 	void setUpUser() {
-		user = new User();
-		user.setId(5);
-		user.setName("Barbara");
-		user.setBirthDate(LocalDate.of(2012, 5, 8));
-		user.setEmail("mail@mail.com");
+		user = new User("Barbara", LocalDate.of(2012, 5, 8), "mail@mail.com");
 	}
 
 	@Test

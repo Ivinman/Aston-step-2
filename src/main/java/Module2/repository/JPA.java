@@ -22,7 +22,7 @@ public class JPA {
 	public <T> T run(Function<EntityManager, T> action) {
 		EntityManager manager = getSession();
 		EntityTransaction transaction = manager.getTransaction();
-		try (manager) {
+		try {
 			transaction.begin();
 			T result = action.apply(manager);
 			transaction.commit();
@@ -33,6 +33,10 @@ public class JPA {
 			}
 			log.error("Transaction failed: {}", e.getMessage(), e);
 			throw new JPAException("Cant perform transaction", e);
+		} finally {
+			if (manager.isOpen()) {
+				manager.close();
+			}
 		}
 	}
 

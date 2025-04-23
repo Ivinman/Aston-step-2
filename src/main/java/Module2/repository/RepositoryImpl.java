@@ -9,10 +9,10 @@ import java.util.Optional;
 
 @Slf4j
 @Setter
-public class RepositoryControllerImpl implements RepositoryController {
-	private JPA jpa;
+public class RepositoryImpl implements Repository {
+	protected JPA jpa;
 
-	public RepositoryControllerImpl() {
+	public RepositoryImpl() {
 		jpa = new JPA();
 	}
 
@@ -41,7 +41,7 @@ public class RepositoryControllerImpl implements RepositoryController {
 	}
 
 	@Override
-	public List<User> findUser() {
+	public List<User> getUserById() {
 		try {
 			return jpa.run(manager -> {
 				var cb = manager.getCriteriaBuilder();
@@ -57,7 +57,7 @@ public class RepositoryControllerImpl implements RepositoryController {
 	}
 
 	@Override
-	public Optional<User> findUser(long id) {
+	public Optional<User> getUserById(long id) {
 		try {
 			return jpa.run(manager -> Optional.ofNullable(manager.find(User.class, id)));
 		} catch (JPAException e) {
@@ -67,7 +67,7 @@ public class RepositoryControllerImpl implements RepositoryController {
 	}
 
 	@Override
-	public long newUser(User user) {
+	public long createUser(User user) {
 		ValidatorUtils.validate(user);
 		try {
 			return jpa.run(manager -> {

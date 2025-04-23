@@ -80,7 +80,7 @@ public class ConsoleCommand implements CommandInterface {
 		userConstructor(user, Command.BIRTH_DATE);
 		userConstructor(user, Command.EMAIL);
 		ValidatorUtils.validate(user);
-		System.out.printf("Пользователь успешно создан\nid %d%n", controller.newUser(user));
+		System.out.printf("Пользователь успешно создан\nid %d%n", controller.createUser(user));
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public class ConsoleCommand implements CommandInterface {
 
 	@Override
 	public void findUsers() {
-		List<User> list = controller.findUser();
+		List<User> list = controller.getAllUsers();
 		if (list.isEmpty()) {
 			System.out.println("База данных пуста");
 		} else {
@@ -154,7 +154,7 @@ public class ConsoleCommand implements CommandInterface {
 	@Override
 	public User findUser(String message) {
 		long id = checkId(getString(message));
-		Optional<User> user = controller.findUser(id);
+		Optional<User> user = controller.getUserById(id);
 		if (user.isEmpty()) {
 			findUser("Пользователь с id " + id + " не найден\nВведите другой id");
 		} else
