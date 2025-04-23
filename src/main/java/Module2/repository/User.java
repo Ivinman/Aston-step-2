@@ -59,7 +59,6 @@ public class User {
 		this.createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 	}
 
-
 	public boolean equals(final Object o) {
 		if (o == this) return true;
 		if (!(o instanceof User other)) return false;
