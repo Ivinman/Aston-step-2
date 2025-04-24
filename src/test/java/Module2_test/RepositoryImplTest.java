@@ -83,15 +83,13 @@ public class RepositoryImplTest extends RepositoryImpl {
 
 	@Test
 	void deleteUser_test_ok() {
-		long expected = createUser(user);
-		long actual = deleteUser(expected);
-		assertEquals(expected, actual);
+		long id = createUser(user);
+		assertTrue(deleteUser(id));
 	}
 
 	@Test
 	void deleteUser_test_fail() {
-		long actual = deleteUser(1L);
-		assertEquals(-1L, actual);
+		assertFalse(deleteUser(1L));
 	}
 
 	@Test

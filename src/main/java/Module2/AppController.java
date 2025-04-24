@@ -5,6 +5,7 @@ import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
 import Module2.view.ConsoleCommand;
+import Module2.view.InputProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,8 @@ public class AppController {
 	public AppController() {
 		Repository repository = new RepositoryImpl();
 		this.userService = new UserService(repository);
-		new ConsoleCommand(this);
+//		new ConsoleCommand(this);
+		new InputProvider(this);
 	}
 
 	public long createUser(User user) {

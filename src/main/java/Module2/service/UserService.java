@@ -25,7 +25,7 @@ public class UserService {
 	}
 
 	public boolean deleteUser(long id) {
-		return repository.deleteUser(id) != -1L;
+		return repository.deleteUser(id);
 	}
 
 	public List<User> findAll() {

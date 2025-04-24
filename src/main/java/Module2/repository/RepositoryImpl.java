@@ -17,16 +17,20 @@ public class RepositoryImpl implements Repository {
 	}
 
 	@Override
-	public long deleteUser(long id) {
+	public boolean deleteUser(long id) {
 		try {
 			return jpa.run(manager -> {
 				Optional<User> user = Optional.ofNullable(manager.find(User.class, id));
-				user.ifPresent(manager::remove);
-				return user;
-			}).map(User::getId).orElse(-1L);
+				if (user.isEmpty()) {
+					return false;
+				} else {
+					manager.remove(user.get());
+					return true;
+				}
+			});
 		} catch (JPAException e) {
 			log.error("Error deleting user with id {}: {}", id, e.getMessage());
-			return -1L;
+			return false;
 		}
 	}
 
