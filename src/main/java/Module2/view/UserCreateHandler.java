@@ -61,21 +61,6 @@ public class UserCreateHandler {
 		}
 	}
 
-	private void setBirthDate(User user) {
-		System.out.println("Введите дату рождения в формате dd-mm-yyyy");
-		inputProvider.checkInput();
-
-		if (checkCommand(user)) {
-			String birthDate = storedInput;
-			if (!birthDate.matches("^\\d{2}-\\d{2}-\\d{4}$")) {
-				System.out.println("Формат");
-				setBirthDate(user);
-			} else {
-				user.setBirthDate(LocalDate.parse(birthDate));
-			}
-		}
-	}
-
 	private void setEMail(User user) {
 		System.out.println("Введите почтовый адрес");
 		inputProvider.checkInput();

@@ -117,15 +117,7 @@ public class ConsoleCommand implements CommandInterface {
 					user.setName(name);
 				}
 			}
-			case BIRTH_DATE -> {
-				try {
-					LocalDate date = LocalDate.parse(getString("Укажите дату рождения (yyyy-mm-dd):"));
-					user.setBirthDate(date);
-				} catch (DateTimeParseException e) {
-					System.err.println("Неверный формат даты");
-					userConstructor(user, Command.BIRTH_DATE);
-				}
-			}
+
 			case EMAIL -> {
 				String email = getString("Укажите email:");
 				if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {

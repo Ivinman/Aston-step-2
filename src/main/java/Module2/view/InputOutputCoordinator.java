@@ -16,7 +16,7 @@ public class InputOutputCoordinator {
 	}
 
 	public void delete() {
-		System.out.println("Введите номер пользователя");
+		System.out.println("Введите id пользователя");
 		int id = inputProvider.getId();
 		if (id > -1) {
 			delete(id);
@@ -27,9 +27,9 @@ public class InputOutputCoordinator {
 	public void delete(int id) {
 		if (inputProvider.getConfirm()) {
 			if (controller.deleteUser(id)) {
-				System.out.printf("Пользователь с номером %d удален%n", id);
+				System.out.printf("Пользователь с id %d удален%n", id);
 			} else {
-				System.out.printf("Пользователь с номером %d не найден", id);
+				System.out.printf("Пользователь с id %d не найден", id);
 				inputProvider.getCommand();
 			}
 		} else {
@@ -48,12 +48,12 @@ public class InputOutputCoordinator {
 	}
 
 	public Optional<User> findUser() {
-		System.out.println("Введите номер пользователя");
+		System.out.println("Введите id пользователя");
 		int id = inputProvider.getId();
 		if (id > -1) {
 			Optional<User> user = controller.getUserById(id);
 			if (user.isEmpty()) {
-				System.out.printf("Пользователь с номером %s не найден%n", id);
+				System.out.printf("Пользователь с id %d не найден%n", id);
 				inputProvider.getCommand();
 				return Optional.empty();
 			} else {
