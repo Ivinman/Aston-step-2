@@ -37,7 +37,6 @@ public class InputProvider {
 		return false;
 	}
 
-
 	public void checkInput() {
 		String input = this.input.nextLine().trim();
 		if (handleSpecialCommands(input)) {
@@ -62,7 +61,6 @@ public class InputProvider {
 		};
 	}
 
-
 	public int getId() {
 		String cmd = input.nextLine().trim();
 
@@ -79,32 +77,36 @@ public class InputProvider {
 		return Integer.parseInt(cmd);
 	}
 
-
 	public void getCommand() {
 		System.out.println("Введите вашу команду");
 		String cmd = input.nextLine().trim();
-		if (!cmd.startsWith("-")) System.out.println("Не команда");
-		switch (ofPrimary(cmd).get()) {
-			case HELP -> printCommands();
-			case NEW_USER -> createHandler.createUser();
-			case EDIT -> {
-				Optional<User> user = coordinator.findUser();
-				if (user.isPresent()) {
-					System.out.printf("Вы собиратесь изменить пользователя%n%s%n", user.get());
-					createHandler.editUser(user.get());
+		Optional<ConsoleCommand.Command> command = ofPrimary(cmd);
+		if (command.isEmpty()) {
+			System.out.println("Неизвестная команда\nВведите " + HELP.getCommand() + " для списка команд");
+			getCommand();
+		} else {
+			switch (command.get()) {
+				case HELP -> printCommands();
+				case NEW_USER -> createHandler.createUser();
+				case EDIT -> {
+					Optional<User> user = coordinator.findUser();
+					if (user.isPresent()) {
+						System.out.printf("Вы собиратесь изменить пользователя%n%s%n", user.get());
+						createHandler.editUser(user.get());
+						getCommand();
+					}
+				}
+				case DELETE_USER -> coordinator.delete();
+				case FIND_ALL -> coordinator.findUsers();
+				case FIND_USER -> {
+					coordinator.findUser().ifPresent(System.out::println);
 					getCommand();
 				}
-			}
-			case DELETE_USER -> coordinator.delete();
-			case FIND_ALL -> coordinator.findUsers();
-			case FIND_USER -> {
-				coordinator.findUser().ifPresent(System.out::println);
-				getCommand();
-			}
-			case EXIT -> coordinator.exit();
-			default -> {
-				System.out.println("Неизвестная команда\nВведите " + HELP.getCommand() + " для списка команд");
-				getCommand();
+				case EXIT -> coordinator.exit();
+				default -> {
+					System.out.println("Неизвестная команда\nВведите " + HELP.getCommand() + " для списка команд");
+					getCommand();
+				}
 			}
 		}
 	}

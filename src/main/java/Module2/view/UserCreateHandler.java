@@ -5,6 +5,9 @@ import Module2.repository.User;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class UserCreateHandler {
 	@Setter
@@ -24,33 +27,58 @@ public class UserCreateHandler {
 	}
 
 	private void editUser(User user, UserField field) {
-		storedInput = "";
 		switch (field) {
 			case ALL -> {
 				setName(user);
 				setBirthDate(user);
 				setEMail(user);
-				saveUser(user);
+				saveUser(controller -> controller.createUser(user));
 			}
-			case NAME -> setName(user);
-			case BIRTH_DATE -> setBirthDate(user);
+			case NAME -> {
+				setName(user);
+				editUser(user);
+			}
+			case BIRTH_DATE -> {
+				setBirthDate(user);
+				editUser(user);
+			}
 			case EMAIL -> {
 				setEMail(user);
+				editUser(user);
 			}
-			case DONE -> saveUser(user);
+			case DONE -> {
+				saveUser(controller -> controller.updateUser(user));
+				inputProvider.getCommand();
+			}
 		}
 	}
 
 	public void editUser(User user) {
-		storedInput = "";
 		System.out.println("edit");
+
+		if (getUserCommand()) {
+			System.out.println("stock= " + storedInput);
+			System.out.println(user);
+			editUser(user, UserField.of(storedInput).get());
+		} else {
+			inputProvider.getCommand();
+		}
+	}
+
+	public boolean getUserCommand() {
+		inputProvider.checkInput();
+
+		if (checkCommand()) {
+			return UserField.of(storedInput).isPresent();
+		}
+		return false;
 	}
 
 	private void setName(User user) {
 		System.out.println("Введите имя");
 		inputProvider.checkInput();
 
-		if (checkCommand(user)) {
+		if (checkCommand()) {
 			String name = storedInput;
 			if (name.length() < 2 || name.length() > 255) {
 				System.out.println("Длинна");
@@ -62,12 +90,12 @@ public class UserCreateHandler {
 	}
 
 	private void setBirthDate(User user) {
-		System.out.println("Введите дату рождения в формате dd-mm-yyyy");
+		System.out.println("Введите дату рождения в формате yyyy-mm-dd");
 		inputProvider.checkInput();
 
-		if (checkCommand(user)) {
+		if (checkCommand()) {
 			String birthDate = storedInput;
-			if (!birthDate.matches("^\\d{2}-\\d{2}-\\d{4}$")) {
+			if (!birthDate.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
 				System.out.println("Формат");
 				setBirthDate(user);
 			} else {
@@ -80,7 +108,7 @@ public class UserCreateHandler {
 		System.out.println("Введите почтовый адрес");
 		inputProvider.checkInput();
 
-		if (checkCommand(user)) {
+		if (checkCommand()) {
 			String email = storedInput;
 			if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
 				System.out.println("Почта");
@@ -91,12 +119,19 @@ public class UserCreateHandler {
 		}
 	}
 
-	private void saveUser(User user) {
-		controller.createUser(user);
+	private void saveUser(Consumer<AppController> action) {
+		if (!checkCommand()) {
+			return;
+		}
+
+		if (inputProvider.getConfirm()) {
+			action.accept(controller);
+		}
+
 		inputProvider.getCommand();
 	}
 
-	private boolean checkCommand(User user) {
+	private boolean checkCommand() {
 		if (storedInput.isEmpty() || storedInput.isBlank()) {
 			System.out.println("Введите -abort, чтобы прервать создание пользователя");
 			System.out.println("Введите -help user, чтобы увидеть все команды создания пользователя");
@@ -104,23 +139,18 @@ public class UserCreateHandler {
 			inputProvider.checkInput();
 			return false;
 		} else if (storedInput.equalsIgnoreCase(UserField.ABORT.command)) {
-			user = null;
 			inputProvider.getCommand();
 			return false;
 		} else if (storedInput.equalsIgnoreCase(ConsoleCommand.Command.EXIT.getCommand())) {
 			controller.exit();
 			return false;
 		} else if (storedInput.equalsIgnoreCase(ConsoleCommand.Command.HELP.getCommand())) {
-			user = null;
 			ConsoleCommand.Command.printCommands();
 		} else if (storedInput.equalsIgnoreCase(UserField.USER_HELP.command)) {
-			user = null;
 			System.out.println("Помошь");
-//			TODO edit user
 		}
 		return true;
 	}
-
 
 	public enum UserField {
 		ABORT("-abort"),
@@ -135,6 +165,16 @@ public class UserCreateHandler {
 
 		UserField(String command) {
 			this.command = command;
+		}
+
+		private static UserField[] userCommands() {
+			return new UserField[] {NAME, BIRTH_DATE, EMAIL, DONE};
+		}
+
+		private static Optional<UserField> of(String input) {
+			return Arrays.stream(userCommands())
+					.filter(userField -> userField.command.equalsIgnoreCase(input))
+					.findFirst();
 		}
 	}
 }
