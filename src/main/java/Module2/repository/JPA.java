@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import java.util.Properties;
 import java.util.function.Function;
 
 @Slf4j
@@ -14,6 +15,13 @@ public class JPA {
 	public JPA() {
 		factory = new Configuration().configure().buildSessionFactory();
 	}
+
+
+	public JPA(Properties properties) {
+		this.factory = new Configuration().setProperties(properties).addAnnotatedClass(User.class).buildSessionFactory();
+	}
+
+
 
 	public EntityManager getSession() {
 		return factory.createEntityManager();
