@@ -4,7 +4,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.Properties;
 
-public class TestContainerStarter {
+public class TestContainerStarterinClass {
     @SuppressWarnings("resource")
     private static final PostgreSQLContainer<?> postgres =
             new PostgreSQLContainer<>("postgres:17")

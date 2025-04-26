@@ -4,6 +4,7 @@ import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
 import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.aston.TestContainerStarter;
 
 import java.time.LocalDate;
 import java.util.List;
