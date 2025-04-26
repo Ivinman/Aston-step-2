@@ -4,7 +4,6 @@ import Module2.service.UserService;
 import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
-import Module2.utils.ValidatorUtils;
 import Module2.view.*;
 
 import java.util.List;

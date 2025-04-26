@@ -66,7 +66,7 @@ public class UserCreateHandler {
 								});
 							} else {
 								editActions.getOrDefault(field,
-												(h, u) -> ui.print("Такого поля не существует"))
+												(_, _) -> ui.print("Такого поля не существует"))
 										.accept(this, user);
 							}
 						},
