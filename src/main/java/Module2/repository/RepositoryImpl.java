@@ -35,17 +35,18 @@ public class RepositoryImpl implements Repository {
 	}
 
 	@Override
-	public long updateUser(User user) {
+	public boolean updateUser(User user) {
 		try {
-			return jpa.run(manager -> manager.merge(user)).getId();
+			jpa.run(manager -> manager.merge(user));
+			return true;
 		} catch (JPAException e) {
 			log.error("Transaction failed during update for user {}: {}", user.getId(), e.getMessage());
-			throw new RuntimeException("Cant update user", e);
+			return false;
 		}
 	}
 
 	@Override
-	public List<User> getUserById() {
+	public List<User> getAllUsers() {
 		try {
 			return jpa.run(manager -> {
 				var cb = manager.getCriteriaBuilder();
@@ -80,7 +81,7 @@ public class RepositoryImpl implements Repository {
 			});
 		} catch (JPAException e) {
 			log.error("Transaction failed during user creation: {}", e.getMessage());
-			throw new RuntimeException("Cant create new user", e);
+			return  -1L;
 		}
 	}
 

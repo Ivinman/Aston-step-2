@@ -1,16 +1,16 @@
 package Module2.repository;
 
+import Module2.view.UserDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
+
 
 @Entity
 @Table(name = "users")
@@ -19,52 +19,49 @@ import java.time.temporal.ChronoUnit;
 @NoArgsConstructor
 public class User {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Setter(AccessLevel.NONE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+
 	@NotBlank(message = "Name cannot be empty")
 	@Size(min = 2, max = 255, message = "Name must be 2–255 characters long")
 	private String name;
-	@NotNull(message = "BirthDate cannot be null")
-	@PastOrPresent(message = "BirthDate cannot be in future")
-	private LocalDate birthDate;
-	@Email(message = "Wrong format email")
-	@Column(unique = true)
+
+	@Column(name = "email", nullable = false, unique = true)
 	private String email;
-	@Setter(AccessLevel.NONE)
+
+	@Column(name = "age", nullable = false)
 	@Min(value = 0, message = "Age should be positive")
 	private int age;
-	@Setter(AccessLevel.NONE)
-	private LocalDateTime createdAt = LocalDateTime.now();
 
-	public User(String name, LocalDate birth, String email) {
-		this.name = name;
-		setBirthDate(birth);
-		this.email = email;
+	@CreationTimestamp
+	@Column(name = "created_at", nullable = false, updatable = false)
+	@Setter(AccessLevel.NONE)
+	private LocalDateTime createdAt;
+
+	public User(UserDto dto) {
+		this.name = dto.getName();
+		this.age = dto.getAge();
+		this.email = dto.getEmail();
 	}
 
-	public void setBirthDate(LocalDate birthDate) {
-		this.birthDate = birthDate;
-		age = Period.between(birthDate, LocalDate.now()).getYears();
+	public User(String name, int age, String email) {
+		this.name = name;
+		this.age = age;
+		this.email = email;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s%n  ID: %d%n  Дата рождения: %s%n  Возраст: %d%n  Почта: %s%n",
-				name, id, birthDate, age, email);
-	}
-
-	@PrePersist
-	protected void onCreate() {
-		this.createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+		return String.format("%s%n  ID: %d%n  Полных лет: %d%n  Почта: %s%n",
+				name, id, age, email);
 	}
 
 	public boolean equals(final Object o) {
 		if (o == this) return true;
 		if (!(o instanceof User other)) return false;
 		if (!other.canEqual(this)) return false;
-		if (this.getId() != other.getId()) return false;
-		final LocalDateTime this$createdAt = this.getCreatedAt();
+		if (this.id != other.getId()) return false;
+		final LocalDateTime this$createdAt = this.createdAt;
 		final LocalDateTime other$createdAt = other.getCreatedAt();
 		return this$createdAt.equals(other$createdAt);
 	}
@@ -76,9 +73,9 @@ public class User {
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
-		final long $id = this.getId();
+		final long $id = this.id;
 		result = result * PRIME + Long.hashCode($id);
-		final Object $createdAt = this.getCreatedAt();
+		final Object $createdAt = this.createdAt;
 		result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
 		return result;
 	}

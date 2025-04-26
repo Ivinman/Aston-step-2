@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,7 +16,7 @@ public class ValidatorTest {
 
 	@BeforeEach
 	void setUpUser() {
-		user = new User("Barbara", LocalDate.of(2012, 5, 8), "mail@mail.com");
+		user = new User("Barbara", 33, "mail@mail.com");
 	}
 
 	@Test
@@ -69,7 +68,7 @@ public class ValidatorTest {
 
 	@Test
 	void validator_test_birthDate_Age() {
-		user.setBirthDate(LocalDate.MAX);
+		user.setAge(Integer.MAX_VALUE);
 
 		IllegalArgumentException exception =
 				assertThrows(IllegalArgumentException.class, () -> ValidatorUtils.validate(user));

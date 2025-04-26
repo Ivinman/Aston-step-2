@@ -7,7 +7,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,7 @@ public class RepositoryImplTest extends RepositoryImpl {
 	@BeforeAll
 	void setUp() {
 		System.setProperty("hibernate.connection.url", postgres.getJdbcUrl());
-		System.setProperty("hibernate.connection.username", postgres.getUsername());
+		System.setProperty("hibernate.connection.name", postgres.getUsername());
 		System.setProperty("hibernate.connection.password", postgres.getPassword());
 		System.setProperty("hibernate.hbm2ddl.auto", "create-drop");
 	}
@@ -42,10 +41,9 @@ public class RepositoryImplTest extends RepositoryImpl {
 
 	@Test
 	void updateUser_test_ok() {
-		long expected = createUser(user);
+		createUser(user);
 		user.setName("Bob");
-		long actual = updateUser(user);
-		assertEquals(expected, actual);
+		assertTrue(updateUser(user));
 	}
 
 	@Test
@@ -64,20 +62,20 @@ public class RepositoryImplTest extends RepositoryImpl {
 
 	@Test
 	void getAllUsersById_test_ok() {
-		User testUser = new User("Bob", LocalDate.of(2016, 1, 3), "mail@test.com");
+		User testUser = new User("Bob", 15, "mail@test.com");
 		List<User> expected = List.of(user, testUser);
 
 		createUser(user);
 		createUser(testUser);
 
-		List<User> actual = getUserById();
+		List<User> actual = getAllUsers();
 		assertTrue(expected.containsAll(actual));
 		assertEquals(expected.size(), actual.size());
 	}
 
 	@Test
 	void  getAllUsersById_test_fail() {
-		List<User> actual = getUserById();
+		List<User> actual = getAllUsers();
 		assertTrue(actual.isEmpty());
 	}
 
@@ -100,7 +98,7 @@ public class RepositoryImplTest extends RepositoryImpl {
 
 	@BeforeEach
 	void clearAllData() {
-		user = new User("Alice", LocalDate.of(2012, 1, 10), "mail@mail.com");
+		user = new User("Alice", 7, "mail@mail.com");
 
 		jpa.run(manager ->
 			manager.createNativeQuery("TRUNCATE TABLE users RESTART IDENTITY CASCADE")

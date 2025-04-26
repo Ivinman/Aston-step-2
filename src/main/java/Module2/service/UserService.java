@@ -19,7 +19,7 @@ public class UserService {
 		return repository.createUser(user);
 	}
 
-	public long updateUser(User user) {
+	public boolean updateUser(User user) {
 		ValidatorUtils.validate(user);
 		return repository.updateUser(user);
 	}
@@ -29,7 +29,7 @@ public class UserService {
 	}
 
 	public List<User> findAll() {
-		return repository.getUserById();
+		return repository.getAllUsers();
 	}
 
 	public Optional<User> findById(long id) {

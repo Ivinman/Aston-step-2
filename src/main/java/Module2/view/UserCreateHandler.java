@@ -1,180 +1,157 @@
 package Module2.view;
 
 import Module2.AppController;
-import Module2.repository.User;
-import lombok.Setter;
+import lombok.Getter;
 
-import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class UserCreateHandler {
-	@Setter
-	private String storedInput;
-	private final InputProvider inputProvider;
-	private final AppController controller;
 
-	public UserCreateHandler(InputProvider inputProvider, AppController controller) {
-		this.inputProvider = inputProvider;
+	private final AppController controller;
+	private final ConsoleUI ui;
+	private final UserFieldService service;
+
+	private static final Map<UserField, BiConsumer<UserCreateHandler, UserDto>> editActions = Map.of(
+			UserField.NAME, UserCreateHandler::setName,
+			UserField.BIRTH_DATE, UserCreateHandler::setAge,
+			UserField.EMAIL, UserCreateHandler::setEmail
+	);
+
+	public UserCreateHandler(AppController controller, ConsoleUI ui) {
 		this.controller = controller;
+		this.ui = ui;
+		this.service = new UserFieldService(ui, this, new DtoValidator());
 	}
 
 	public void createUser() {
-		storedInput = "";
-		User user = new User();
-		editUser(user, UserField.ALL);
+		setAllUserFields(new UserDto());
 	}
 
-	private void editUser(User user, UserField field) {
-		switch (field) {
-			case ALL -> {
-				setName(user);
-				setBirthDate(user);
-				setEMail(user);
-				saveUser(controller -> controller.createUser(user));
-			}
-			case NAME -> {
-				setName(user);
-				editUser(user);
-			}
-			case BIRTH_DATE -> {
-				setBirthDate(user);
-				editUser(user);
-			}
-			case EMAIL -> {
-				setEMail(user);
-				editUser(user);
-			}
-			case DONE -> {
-				saveUser(controller -> controller.updateUser(user));
-				inputProvider.getCommand();
-			}
-		}
-	}
-
-	public void editUser(User user) {
-		System.out.println("edit");
-
-		if (getUserCommand()) {
-			System.out.println("stock= " + storedInput);
-			System.out.println(user);
-			editUser(user, UserField.of(storedInput).get());
-		} else {
-			inputProvider.getCommand();
-		}
-	}
-
-	public boolean getUserCommand() {
-		inputProvider.checkInput();
-
-		if (checkCommand()) {
-			return UserField.of(storedInput).isPresent();
-		}
-		return false;
-	}
-
-	private void setName(User user) {
-		System.out.println("Введите имя");
-		inputProvider.checkInput();
-
-		if (checkCommand()) {
-			String name = storedInput;
-			if (name.length() < 2 || name.length() > 255) {
-				System.out.println("Длинна");
-				setName(user);
+	private void setAllUserFields(UserDto user) {
+		setName(user);
+		setAge(user);
+		setEmail(user);
+		confirmAndSave(() -> {
+			long id = controller.createUser(user);
+			if (id > -1) {
+				ui.print("Пользователь успешно создан. Его номер:\n" + id);
 			} else {
-				user.setName(name);
+				ui.print("Произошла ошибка при создании нового пользователя");
+				ui.print("Пожалуйста, попробуйте еще раз позднее");
+			}
+		});
+	}
+
+	public void editUser(UserDto user) {
+		while (true) {
+			ui.print("Укажите, какое поле хотите отредактировать:");
+			String input = ui.readLine();
+			if (handleSpecialCommand(input)) {
+				UserField.of(input).ifPresentOrElse(
+						field -> {
+							if (field == UserField.DONE) {
+								confirmAndSave(() -> {
+									if (controller.updateUser(user)) {
+										ui.print("Пользователь успешно обновлен:");
+										ui.print(user.toString());
+									} else {
+										ui.print("Произошла ошибка при обновлении пользователя");
+										ui.print("Пожалуйста, попробуйте еще раз позднее");
+									}
+								});
+							} else {
+								editActions.getOrDefault(field,
+												(h, u) -> ui.print("Такого поля не существует"))
+										.accept(this, user);
+							}
+						},
+						() -> ui.print("Неизвестная команда. " + UserField.USER_HELP.getTip())
+				);
 			}
 		}
 	}
 
-	private void setBirthDate(User user) {
-		System.out.println("Введите дату рождения в формате yyyy-mm-dd");
-		inputProvider.checkInput();
+	private void setName(UserDto user) {
+		String name = service.checkName();
+		if (name != null) user.setName(name);
+	}
 
-		if (checkCommand()) {
-			String birthDate = storedInput;
-			if (!birthDate.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
-				System.out.println("Формат");
-				setBirthDate(user);
-			} else {
-				user.setBirthDate(LocalDate.parse(birthDate));
+	private void setAge(UserDto user) {
+		user.setAge(service.checkAge());
+	}
+
+	private void setEmail(UserDto user) {
+		String email = service.checkEmail();
+		if (email != null) user.setEmail(email);
+	}
+
+	private void confirmAndSave(Runnable action) {
+		if (ui.confirm("Сохранить изменения?")) {
+			action.run();
+		}
+		ui.backToMain();
+	}
+
+	public boolean handleSpecialCommand(String input) {
+		return UserField.of(input).map(field -> {
+			switch (field) {
+				case ABORT -> {
+					ui.backToMain();
+					return false;
+				}
+				case EXIT -> {
+					controller.exit();
+					return false;
+				}
+				case HELP -> {
+					ui.print(Command.printHelp());
+					return false;
+				}
+				case USER_HELP -> {
+					ui.print(UserField.printHelp());
+					return false;
+				}
+				default -> {
+					return true;
+				}
 			}
-		}
-	}
-
-	private void setEMail(User user) {
-		System.out.println("Введите почтовый адрес");
-		inputProvider.checkInput();
-
-		if (checkCommand()) {
-			String email = storedInput;
-			if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-				System.out.println("Почта");
-				setEMail(user);
-			} else {
-				user.setEmail(email);
-			}
-		}
-	}
-
-	private void saveUser(Consumer<AppController> action) {
-		if (!checkCommand()) {
-			return;
-		}
-
-		if (inputProvider.getConfirm()) {
-			action.accept(controller);
-		}
-
-		inputProvider.getCommand();
-	}
-
-	private boolean checkCommand() {
-		if (storedInput.isEmpty() || storedInput.isBlank()) {
-			System.out.println("Введите -abort, чтобы прервать создание пользователя");
-			System.out.println("Введите -help user, чтобы увидеть все команды создания пользователя");
-			System.out.println("Введите -help, чтобы увидеть все основные команды");
-			inputProvider.checkInput();
-			return false;
-		} else if (storedInput.equalsIgnoreCase(UserField.ABORT.command)) {
-			inputProvider.getCommand();
-			return false;
-		} else if (storedInput.equalsIgnoreCase(ConsoleCommand.Command.EXIT.getCommand())) {
-			controller.exit();
-			return false;
-		} else if (storedInput.equalsIgnoreCase(ConsoleCommand.Command.HELP.getCommand())) {
-			ConsoleCommand.Command.printCommands();
-		} else if (storedInput.equalsIgnoreCase(UserField.USER_HELP.command)) {
-			System.out.println("Помошь");
-		}
-		return true;
+		}).orElse(true);
 	}
 
 	public enum UserField {
-		ABORT("-abort"),
-		USER_HELP("-help user"),
-		DONE("-done"),
-		NAME("-name"),
-		BIRTH_DATE("-birth"),
-		EMAIL("-email"),
-		ALL("-new");
+		HELP("-help", "Введите '-help' для общей справки"),
+		USER_HELP("-help user", "Введите '-help user' для справки по созданию нового пользователя"),
+		NAME("-name", "Введите '-name' для нового имени"),
+		BIRTH_DATE("-birth", "Введите '-birth' для новой даты рождения"),
+		EMAIL("-email", "Введите '-email' для нового почтового адреса"),
+		ALL("-all", "Введите '-all' для последовательного редактирования всех полей"),
+		ABORT("-abort", "Введите '-abort' для отмены"),
+		DONE("-done", "Введите '-done' для завершения редактирования"),
+		EXIT("-exit", "Введите '-exit' для выхода");
 
 		private final String command;
+		@Getter
+		private final String tip;
 
-		UserField(String command) {
+		private static final Map<String, UserField> map = Arrays.stream(values())
+				.collect(Collectors.toMap(cmd -> cmd.command.toLowerCase(), Function.identity()));
+
+		UserField(String command, String tip) {
 			this.command = command;
+			this.tip = tip;
 		}
 
-		private static UserField[] userCommands() {
-			return new UserField[] {NAME, BIRTH_DATE, EMAIL, DONE};
+		public static Optional<UserField> of(String input) {
+			return Optional.ofNullable(map.get(input.toLowerCase()));
 		}
 
-		private static Optional<UserField> of(String input) {
-			return Arrays.stream(userCommands())
-					.filter(userField -> userField.command.equalsIgnoreCase(input))
-					.findFirst();
+		public static String printHelp() {
+			return Arrays.stream(values()).map(f -> f.tip + "\n").toString();
 		}
 	}
 }
