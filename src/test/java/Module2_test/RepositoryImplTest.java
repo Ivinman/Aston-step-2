@@ -1,21 +1,31 @@
 package Module2_test;
 
+import Module2.repository.JPA;
+import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Testcontainers
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
-public class RepositoryImplTest extends RepositoryImpl {
+public class RepositoryImplTest {
 	private User user;
+	private Repository repository;
+	private JPA jpa;
 
 	@SuppressWarnings("resource")
 	@Container
@@ -27,36 +37,40 @@ public class RepositoryImplTest extends RepositoryImpl {
 
 	@BeforeAll
 	void setUp() {
-		System.setProperty("hibernate.connection.url", postgres.getJdbcUrl());
-		System.setProperty("hibernate.connection.name", postgres.getUsername());
-		System.setProperty("hibernate.connection.password", postgres.getPassword());
-		System.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+		Properties properties = new Properties();
+		properties.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
+		properties.setProperty("hibernate.connection.url", postgres.getJdbcUrl());
+		properties.setProperty("hibernate.connection.username", postgres.getUsername());
+		properties.setProperty("hibernate.connection.password", postgres.getPassword());
+		properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+		jpa = new JPA(properties);
+		repository = new RepositoryImpl(jpa);
 	}
 
 	@Test
 	void createUser_test_ok() {
-		long expectedId = createUser(user);
+		long expectedId = repository.createUser(user);
 		assertTrue(expectedId > 0);
 	}
 
 	@Test
 	void updateUser_test_ok() {
-		createUser(user);
+		repository.createUser(user);
 		user.setName("Bob");
-		assertTrue(updateUser(user));
+		assertTrue(repository.updateUser(user));
 	}
 
 	@Test
 	void getUserById_test_ok() {
-		long id = createUser(user);
-		Optional<User> actual = getUserById(id);
+		long id = repository.createUser(user);
+		Optional<User> actual = repository.getUserById(id);
 		assertTrue(actual.isPresent());
 		assertEquals(actual.get(), user);
 	}
 
 	@Test
 	void getUserById_test_fail() {
-		Optional<User> actual = getUserById(1);
+		Optional<User> actual = repository.getUserById(1);
 		assertTrue(actual.isEmpty());
 	}
 
@@ -65,35 +79,35 @@ public class RepositoryImplTest extends RepositoryImpl {
 		User testUser = new User("Bob", 15, "mail@test.com");
 		List<User> expected = List.of(user, testUser);
 
-		createUser(user);
-		createUser(testUser);
+		repository.createUser(user);
+		repository.createUser(testUser);
 
-		List<User> actual = getAllUsers();
+		List<User> actual = repository.getAllUsers();
 		assertTrue(expected.containsAll(actual));
 		assertEquals(expected.size(), actual.size());
 	}
 
 	@Test
 	void  getAllUsersById_test_fail() {
-		List<User> actual = getAllUsers();
+		List<User> actual = repository.getAllUsers();
 		assertTrue(actual.isEmpty());
 	}
 
 	@Test
 	void deleteUser_test_ok() {
-		long id = createUser(user);
-		assertTrue(deleteUser(id));
+		long id = repository.createUser(user);
+		assertTrue(repository.deleteUser(id));
 	}
 
 	@Test
 	void deleteUser_test_fail() {
-		assertFalse(deleteUser(1L));
+		assertFalse(repository.deleteUser(1L));
 	}
 
 	@Test
 	void nonUniqueEmail_test() {
-		createUser(user);
-		assertThrows(RuntimeException.class, () -> createUser(user));
+		repository.createUser(user);
+		assertEquals(-1L, repository.createUser(user));
 	}
 
 	@BeforeEach
