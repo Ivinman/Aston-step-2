@@ -3,12 +3,14 @@ package Module2_test;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
 import org.junit.jupiter.api.*;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.aston.TestContainerStarter;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,14 +20,24 @@ public class RepositoryWithContTest {
 	private User user;
 	private RepositoryImpl repository;
 
-	@BeforeAll
-	void setUp() {
-		repository = new RepositoryImpl(TestContainerStarter.starWithProperties());
-	}
+	//Оставил создание контейнера здесь, т.к. отдельный класс создавать в папке с тестами вроде не очень хорошо
+	@SuppressWarnings("resource")
+	@Container
+	private static final PostgreSQLContainer<?> postgres =
+			new PostgreSQLContainer<>("postgres:17")
+					.withDatabaseName("Prod")
+					.withUsername("postgres")
+					.withPassword("root");
 
-	@AfterAll
-	void closeContainer() {
-		TestContainerStarter.closeContainer();
+	@BeforeAll
+	void starWithProperties() {
+		Properties properties = new Properties();
+		properties.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
+		properties.setProperty("hibernate.connection.url", postgres.getJdbcUrl());
+		properties.setProperty("hibernate.connection.username", postgres.getUsername());
+		properties.setProperty("hibernate.connection.password", postgres.getPassword());
+		properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+		repository = new RepositoryImpl(properties);
 	}
 
 	@Test
