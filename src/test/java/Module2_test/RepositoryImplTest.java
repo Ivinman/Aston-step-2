@@ -4,10 +4,11 @@ import Module2.repository.JPA;
 import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -17,8 +18,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
@@ -31,7 +32,7 @@ public class RepositoryImplTest {
 	@Container
 	private static final PostgreSQLContainer<?> postgres =
 			new PostgreSQLContainer<>("postgres:17")
-					.withDatabaseName("Prod")
+					.withDatabaseName("test_db")
 					.withUsername("postgres")
 					.withPassword("root");
 
@@ -46,6 +47,19 @@ public class RepositoryImplTest {
 		jpa = new JPA(properties);
 		repository = new RepositoryImpl(jpa);
 	}
+
+	@BeforeEach
+	void setUser() {
+		user = new User("Alice", 7, "mail@mail.com");
+	}
+
+	@AfterEach
+	void clearData() {
+		jpa.run(manager ->
+				manager.createNativeQuery("TRUNCATE TABLE users RESTART IDENTITY CASCADE")
+						.executeUpdate());
+	}
+
 
 	@Test
 	void createUser_test_ok() {
@@ -108,14 +122,5 @@ public class RepositoryImplTest {
 	void nonUniqueEmail_test() {
 		repository.createUser(user);
 		assertEquals(-1L, repository.createUser(user));
-	}
-
-	@BeforeEach
-	void clearAllData() {
-		user = new User("Alice", 7, "mail@mail.com");
-
-		jpa.run(manager ->
-			manager.createNativeQuery("TRUNCATE TABLE users RESTART IDENTITY CASCADE")
-					.executeUpdate());
 	}
 }

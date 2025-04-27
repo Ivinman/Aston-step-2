@@ -1,5 +1,6 @@
 package Module2;
 
+import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
 import Module2.service.UserService;
@@ -18,7 +19,7 @@ public class AppController {
     private final ConsoleCommander commander;
 
     public AppController() {
-        RepositoryImpl repository = new RepositoryImpl();
+        Repository repository = new RepositoryImpl();
         this.userService = new UserService(repository);
         Scanner scanner = new Scanner(System.in);
         ConsoleUI ui = new ConsoleUI(scanner, this::run);

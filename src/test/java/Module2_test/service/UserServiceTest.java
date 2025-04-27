@@ -39,41 +39,26 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-
-    //=== createUser ===
-
     @Test
     void createUser_success() {
-        User valid = new User();
-        when(repository.createUser(valid)).thenReturn(42L);
+        User validUser = new User();
+        when(repository.createUser(validUser)).thenReturn(42L);
 
-        long id = userService.createUser(valid);
+        long id = userService.createUser(validUser);
 
-        // Спай должен был вызвать реальный метод валидатора
-        validatorUtilsSpy.verify(() -> ValidatorUtils.validate(valid), times(1));
-        verify(repository, times(1)).createUser(valid);
+        validatorUtilsSpy.verify(() -> ValidatorUtils.validate(validUser), times(1));
+        verify(repository, times(1)).createUser(validUser);
         assertEquals(42L, id);
     }
 
     @Test
     void createUser_validationFails() {
-        User invalid = new User();
-        // Перехватываем вызов валидатора и бросаем исключение
-        validatorUtilsSpy
-                .when(() -> ValidatorUtils.validate(invalid))
-                .thenThrow(new IllegalArgumentException("Invalid user"));
+        User invalidUser = new User();
+        IllegalArgumentException ex = getIllegalArgumentExceptionFromValidator(invalidUser);
+        assertEquals("Invalid user data", ex.getMessage());
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.createUser(invalid)
-        );
-        assertEquals("Invalid user", ex.getMessage());
-
-        // Репозиторий при провале валидации не вызывается
         verify(repository, never()).createUser(any());
     }
-
-    //=== updateUser ===
 
     @Test
     void updateUser_success() {
@@ -89,16 +74,10 @@ public class UserServiceTest {
 
     @Test
     void updateUser_validationFails() {
-        User invalid = new User();
-        validatorUtilsSpy
-                .when(() -> ValidatorUtils.validate(invalid))
-                .thenThrow(new IllegalArgumentException("Bad data"));
+        User invalidUser = new User();
+        IllegalArgumentException ex = getIllegalArgumentExceptionFromValidator(invalidUser);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.updateUser(invalid)
-        );
-        assertEquals("Bad data", ex.getMessage());
+        assertEquals("Invalid user data", ex.getMessage());
 
         verify(repository, never()).updateUser(any());
     }
@@ -110,13 +89,10 @@ public class UserServiceTest {
 
         boolean result = userService.updateUser(user);
 
-        // В позитивном кейсе валидатор всё так же вызывается
         validatorUtilsSpy.verify(() -> ValidatorUtils.validate(user), times(1));
         verify(repository, times(1)).updateUser(user);
         assertFalse(result);
     }
-
-    //=== deleteUser ===
 
     @Test
     void deleteUser_success() {
@@ -135,8 +111,6 @@ public class UserServiceTest {
         assertFalse(userService.deleteUser(id));
         verify(repository, times(1)).deleteUser(id);
     }
-
-    //=== findAll ===
 
     @Test
     void findAll_returnsList() {
@@ -159,8 +133,6 @@ public class UserServiceTest {
         assertTrue(result.isEmpty());
         verify(repository, times(1)).getAllUsers();
     }
-
-    //=== findById ===
 
     @Test
     void findById_found() {
@@ -186,11 +158,20 @@ public class UserServiceTest {
         verify(repository, times(1)).getUserById(id);
     }
 
-    //=== exit ===
-
     @Test
     void exit_invokesRepositoryExit() {
         userService.exit();
         verify(repository, times(1)).exit();
+    }
+
+    private IllegalArgumentException getIllegalArgumentExceptionFromValidator(User invalidUser) {
+        validatorUtilsSpy
+                .when(() -> ValidatorUtils.validate(invalidUser))
+                .thenThrow(new IllegalArgumentException("Invalid user data"));
+
+        return assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.createUser(invalidUser)
+        );
     }
 }

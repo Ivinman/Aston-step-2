@@ -1,6 +1,6 @@
 package Module2.service;
 
-import Module2.repository.RepositoryImpl;
+import Module2.repository.Repository;
 import Module2.repository.User;
 import Module2.utils.ValidatorUtils;
 
@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class UserService {
-	private final RepositoryImpl repository;
+	private final Repository repository;
 
-	public UserService(RepositoryImpl repository) {
+	public UserService(Repository repository) {
 		this.repository = repository;
 	}
 
