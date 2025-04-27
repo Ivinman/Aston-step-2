@@ -1,15 +1,12 @@
 package Module2.repository;
 
 import Module2.utils.ValidatorUtils;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 @Slf4j
-@Getter
 public class RepositoryImpl implements Repository {
 	private final JPA jpa;
 
@@ -17,8 +14,8 @@ public class RepositoryImpl implements Repository {
 		jpa = new JPA();
 	}
 
-	public RepositoryImpl(Properties properties) {
-		jpa = new JPA(properties);
+	public RepositoryImpl(JPA jpaWithProperties) {
+		this.jpa = jpaWithProperties;
 	}
 
 	@Override

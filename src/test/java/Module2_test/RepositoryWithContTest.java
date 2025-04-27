@@ -1,5 +1,6 @@
 package Module2_test;
 
+import Module2.repository.JPA;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
 import org.junit.jupiter.api.*;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
 public class RepositoryWithContTest {
 	private User user;
+	private JPA jpa;
 	private RepositoryImpl repository;
 
 	@SuppressWarnings("resource")
@@ -36,7 +38,8 @@ public class RepositoryWithContTest {
 		properties.setProperty("hibernate.connection.username", postgres.getUsername());
 		properties.setProperty("hibernate.connection.password", postgres.getPassword());
 		properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
-		repository = new RepositoryImpl(properties);
+		jpa = new JPA(properties);
+		repository = new RepositoryImpl(jpa);
 	}
 
 	@Test
@@ -107,7 +110,7 @@ public class RepositoryWithContTest {
 	void clearAllData() {
 		user = new User("Alice", LocalDate.of(2012, 1, 10), "mail@mail.com");
 
-		repository.getJpa().run(manager ->
+		jpa.run(manager ->
 			manager.createNativeQuery("TRUNCATE TABLE users RESTART IDENTITY CASCADE")
 					.executeUpdate());
 	}
