@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public enum Command {
 	HELP("-help", "Введите '-help' для общей справки"),
@@ -31,6 +32,8 @@ public enum Command {
 	}
 
 	public static String printHelp() {
-		return Arrays.stream(values()).map(f -> f.tip + "\n").toString();
+		return Arrays.stream(values())
+				.map(c -> c.tip + "\n")
+				.collect(Collectors.joining());
 	}
 }

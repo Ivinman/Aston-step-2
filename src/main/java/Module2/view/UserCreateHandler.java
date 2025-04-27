@@ -151,7 +151,9 @@ public class UserCreateHandler {
 		}
 
 		public static String printHelp() {
-			return Arrays.stream(values()).map(f -> f.tip + "\n").toString();
+			return Arrays.stream(values())
+					.map(f -> f.tip + "\n")
+					.collect(Collectors.joining());
 		}
 	}
 }
