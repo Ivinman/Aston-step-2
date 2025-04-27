@@ -16,12 +16,9 @@ public class JPA {
 		factory = new Configuration().configure().buildSessionFactory();
 	}
 
-
 	public JPA(Properties properties) {
 		this.factory = new Configuration().setProperties(properties).addAnnotatedClass(User.class).buildSessionFactory();
 	}
-
-
 
 	public EntityManager getSession() {
 		return factory.createEntityManager();

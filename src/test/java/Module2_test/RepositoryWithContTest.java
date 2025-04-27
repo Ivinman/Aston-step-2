@@ -20,7 +20,6 @@ public class RepositoryWithContTest {
 	private User user;
 	private RepositoryImpl repository;
 
-	//Оставил создание контейнера здесь, т.к. отдельный класс создавать в папке с тестами вроде не очень хорошо
 	@SuppressWarnings("resource")
 	@Container
 	private static final PostgreSQLContainer<?> postgres =
