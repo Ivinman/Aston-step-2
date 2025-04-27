@@ -4,7 +4,10 @@ import Module2.repository.JPA;
 import Module2.repository.Repository;
 import Module2.repository.RepositoryImpl;
 import Module2.repository.User;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -13,7 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Testcontainers
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
