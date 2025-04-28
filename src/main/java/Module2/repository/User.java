@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "users")
 @Setter
@@ -26,11 +25,13 @@ public class User {
 	@Size(min = 2, max = 255, message = "Name must be 2–255 characters long")
 	private String name;
 
+	@Email
 	@Column(name = "email", nullable = false, unique = true)
 	private String email;
 
 	@Column(name = "age", nullable = false)
 	@Min(value = 0, message = "Age should be positive")
+	@Max(value = 120, message = "Age cannot be more than 120")
 	private int age;
 
 	@CreationTimestamp
