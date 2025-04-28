@@ -40,7 +40,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
-    void createUser_success() {
+    void createUser_ok() {
         User validUser = new User();
         when(repository.createUser(validUser)).thenReturn(42L);
 
@@ -61,7 +61,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_success() {
+    void updateUser_ok() {
         User user = new User();
         when(repository.updateUser(user)).thenReturn(true);
 
@@ -83,7 +83,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_repositoryReturnsFalse() {
+    void updateUser_fail() {
         User user = new User();
         when(repository.updateUser(user)).thenReturn(false);
 
@@ -95,7 +95,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void deleteUser_success() {
+    void deleteUser_ok() {
         long id = 1L;
         when(repository.deleteUser(id)).thenReturn(true);
 
@@ -113,29 +113,29 @@ public class UserServiceTest {
     }
 
     @Test
-    void findAll_returnsList() {
+    void findAll_ok() {
         List<User> users = Arrays.asList(new User(), new User());
-        when(repository.getAllUsers()).thenReturn(users);
+        when(repository.findAllUsers()).thenReturn(users);
 
-        List<User> result = userService.findAll();
+        List<User> result = userService.findAllUsers();
 
         assertSame(users, result);
         assertEquals(2, result.size());
-        verify(repository, times(1)).getAllUsers();
+        verify(repository, times(1)).findAllUsers();
     }
 
     @Test
     void findAll_emptyList() {
-        when(repository.getAllUsers()).thenReturn(Collections.emptyList());
+        when(repository.findAllUsers()).thenReturn(Collections.emptyList());
 
-        List<User> result = userService.findAll();
+        List<User> result = userService.findAllUsers();
 
         assertTrue(result.isEmpty());
-        verify(repository, times(1)).getAllUsers();
+        verify(repository, times(1)).findAllUsers();
     }
 
     @Test
-    void findById_found() {
+    void findById_ok() {
         long id = 7L;
         User user = new User();
         when(repository.getUserById(id)).thenReturn(Optional.of(user));

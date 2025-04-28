@@ -75,7 +75,7 @@ public class RepositoryImplTest {
 	}
 
 	@Test
-	void getUserById_test_ok() {
+	void findUserById_test_ok() {
 		long id = repository.createUser(user);
 		Optional<User> actual = repository.getUserById(id);
 		assertTrue(actual.isPresent());
@@ -83,27 +83,27 @@ public class RepositoryImplTest {
 	}
 
 	@Test
-	void getUserById_test_fail() {
+	void findUserById_test_fail() {
 		Optional<User> actual = repository.getUserById(1);
 		assertTrue(actual.isEmpty());
 	}
 
 	@Test
-	void getAllUsersById_test_ok() {
+	void findAllUsers_test_ok() {
 		User testUser = new User("Bob", 15, "mail@test.com");
 		List<User> expected = List.of(user, testUser);
 
 		repository.createUser(user);
 		repository.createUser(testUser);
 
-		List<User> actual = repository.getAllUsers();
+		List<User> actual = repository.findAllUsers();
 		assertTrue(expected.containsAll(actual));
 		assertEquals(expected.size(), actual.size());
 	}
 
 	@Test
-	void  getAllUsersById_test_fail() {
-		List<User> actual = repository.getAllUsers();
+	void findAllUsers_test_fail() {
+		List<User> actual = repository.findAllUsers();
 		assertTrue(actual.isEmpty());
 	}
 

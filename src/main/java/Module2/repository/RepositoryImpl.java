@@ -25,10 +25,9 @@ public class RepositoryImpl implements Repository {
 				Optional<User> user = Optional.ofNullable(manager.find(User.class, id));
 				if (user.isEmpty()) {
 					return false;
-				} else {
-					manager.remove(user.get());
-					return true;
 				}
+				manager.remove(user.get());
+				return true;
 			});
 		} catch (JPAException e) {
 			log.error("Error deleting user with id {}: {}", id, e.getMessage());
@@ -48,7 +47,7 @@ public class RepositoryImpl implements Repository {
 	}
 
 	@Override
-	public List<User> getAllUsers() {
+	public List<User> findAllUsers() {
 		try {
 			return jpa.run(manager -> {
 				var cb = manager.getCriteriaBuilder();
@@ -68,7 +67,7 @@ public class RepositoryImpl implements Repository {
 		try {
 			return jpa.run(manager -> Optional.ofNullable(manager.find(User.class, id)));
 		} catch (JPAException e) {
-			log.warn("User not found: {}", e.getMessage());
+			log.warn("User {} not found: {}", id, e.getMessage());
 			return Optional.empty();
 		}
 	}
@@ -83,7 +82,7 @@ public class RepositoryImpl implements Repository {
 			});
 		} catch (JPAException e) {
 			log.error("Transaction failed during user creation: {}", e.getMessage());
-			return  -1L;
+			return -1L;
 		}
 	}
 

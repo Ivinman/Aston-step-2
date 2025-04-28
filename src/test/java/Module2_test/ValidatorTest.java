@@ -31,10 +31,7 @@ public class ValidatorTest {
 		IllegalArgumentException exception =
 				assertThrows(IllegalArgumentException.class, () -> ValidatorUtils.validate(user));
 
-		String expected = "Validation error: ";
-		String actual = exception.getMessage();
-
-		assertTrue(actual.contains(expected));
+		assertTrue(exception.getMessage().contains("Validation error"));
 	}
 
 	@ParameterizedTest
@@ -60,10 +57,7 @@ public class ValidatorTest {
 		IllegalArgumentException exception =
 				assertThrows(IllegalArgumentException.class, () -> ValidatorUtils.validate(user));
 
-		String expected = "Validation error: ";
-		String actual = exception.getMessage();
-
-		assertTrue(actual.contains(expected));
+		assertTrue(exception.getMessage().contains("Validation error"));
 	}
 
 	@Test
@@ -73,9 +67,6 @@ public class ValidatorTest {
 		IllegalArgumentException exception =
 				assertThrows(IllegalArgumentException.class, () -> ValidatorUtils.validate(user));
 
-		String expected = "Validation error: ";
-		String actual = exception.getMessage();
-
-		assertTrue(actual.contains(expected));
+		assertTrue(exception.getMessage().contains("Validation error"));
 	}
 }

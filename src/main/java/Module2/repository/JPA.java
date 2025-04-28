@@ -1,6 +1,8 @@
 package Module2.repository;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -20,12 +22,12 @@ public class JPA {
 		factory = new Configuration().addProperties(properties).addAnnotatedClass(User.class).buildSessionFactory();
 	}
 
-	public EntityManager getSession() {
+	private EntityManager getEntityManager() {
 		return factory.createEntityManager();
 	}
 
 	public <T> T run(Function<EntityManager, T> action) {
-		EntityManager manager = getSession();
+		EntityManager manager = getEntityManager();
 		EntityTransaction transaction = manager.getTransaction();
 		try {
 			transaction.begin();
@@ -46,6 +48,7 @@ public class JPA {
 	}
 
 	public void exit() {
+		System.out.println("clousing");
 		factory.close();
 	}
 }

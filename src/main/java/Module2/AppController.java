@@ -43,7 +43,7 @@ public class AppController {
     }
 
     public List<UserDto> findAll() {
-        return userService.findAll()
+        return userService.findAllUsers()
                 .stream()
                 .map(u -> new UserDto(u.getName(), u.getAge(), u.getEmail()))
                 .toList();
@@ -64,6 +64,5 @@ public class AppController {
 
     public void exit() {
         userService.exit();
-        System.exit(0);
     }
 }

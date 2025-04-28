@@ -4,28 +4,31 @@ import Module2.AppController;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class UserCreateHandler {
 
+	private final AtomicBoolean isEditing = new AtomicBoolean(true);
 	private final AppController controller;
 	private final ConsoleUI ui;
 	private final UserFieldService service;
 
-	private static final Map<UserField, BiConsumer<UserCreateHandler, UserDto>> editActions = Map.of(
-			UserField.NAME, UserCreateHandler::setName,
-			UserField.BIRTH_DATE, UserCreateHandler::setAge,
-			UserField.EMAIL, UserCreateHandler::setEmail
-	);
+	private static final Map<UserField, BiConsumer<UserCreateHandler, UserDto>> editActions = new EnumMap<>(UserField.class);
 
 	public UserCreateHandler(AppController controller, ConsoleUI ui) {
 		this.controller = controller;
 		this.ui = ui;
-		this.service = new UserFieldService(ui, this, new DtoValidator());
+		this.service = new UserFieldService(ui, this);
+
+		editActions.put(UserField.NAME, UserCreateHandler::setName);
+		editActions.put(UserField.BIRTH_DATE, UserCreateHandler::setAge);
+		editActions.put(UserField.EMAIL, UserCreateHandler::setEmail);
 	}
 
 	public void createUser() {
@@ -48,7 +51,7 @@ public class UserCreateHandler {
 	}
 
 	public void editUser(UserDto user) {
-		while (true) {
+		while (isEditing.get()) {
 			ui.print("Укажите, какое поле хотите отредактировать:");
 			String input = ui.readLine();
 			if (handleSpecialCommand(input)) {
@@ -101,14 +104,17 @@ public class UserCreateHandler {
 		return UserField.of(input).map(field -> {
 			switch (field) {
 				case ABORT -> {
+					isEditing.set(false);
 					ui.backToMain();
 					return false;
 				}
 				case EXIT -> {
+					isEditing.set(false);
 					controller.exit();
 					return false;
 				}
 				case HELP -> {
+					isEditing.set(false);
 					ui.print(Command.printHelp());
 					return false;
 				}

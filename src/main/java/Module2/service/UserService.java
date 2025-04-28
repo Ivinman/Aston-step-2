@@ -28,8 +28,8 @@ public class UserService {
 		return repository.deleteUser(id);
 	}
 
-	public List<User> findAll() {
-		return repository.getAllUsers();
+	public List<User> findAllUsers() {
+		return repository.findAllUsers();
 	}
 
 	public Optional<User> findById(long id) {
